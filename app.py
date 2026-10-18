@@ -28,7 +28,7 @@ sex = 1 if sex_input == "Female" else 0
 age = st.slider("Passenger Age (Years)", min_value=1, max_value=80, value=30)
 fare = st.slider("Passenger Ticket Fare Paid (USD)", min_value=0, max_value=500, value=32)
 
-# Wrap model interactions entirely inside the action button check
+# Keep all code execution tightly inside the button condition block
 if st.button("Calculate Survival Probability"):
     try:
         model = load_model()
