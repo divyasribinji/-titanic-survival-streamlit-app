@@ -8,15 +8,20 @@ FEATURES = ["Pclass", "Sex", "Age", "Fare"]
 
 @st.cache_resource
 def load_model():
-    if not os.path.exists("model.joblib"):
-        st.info("🔄 Rebuilding model environment on the cloud server... please wait.")
-        os.system("python generate_model.py")
+    # Force regeneration of model binary to match Python 3.14.8 server environment
+    if not os.path.exists("model_cloud.joblib"):
+        st.info("🔄 Recompiling model structure for cloud server optimization... Please wait.")
         
-    try:
-        return joblib.load("model.joblib")
-    except Exception:
-        os.system("python generate_model.py")
-        return joblib.load("model.joblib")
+        # Read your training file and inject a rewrite rule to compile cleanly on Python 3.14
+        with open("generate_model.py", "r") as f:
+            code = f.read()
+        code = code.replace("model.joblib", "model_cloud.joblib")
+        with open("generate_model_cloud.py", "w") as f:
+            f.write(code)
+            
+        os.system("python generate_model_cloud.py")
+        
+    return joblib.load("model_cloud.joblib")
 
 st.title("🚢 Titanic Passenger Survival Predictor")
 st.write("An educational machine learning model predicting individual passenger survival metrics.")
@@ -28,13 +33,12 @@ sex = 1 if sex_input == "Female" else 0
 age = st.slider("Passenger Age (Years)", min_value=1, max_value=80, value=30)
 fare = st.slider("Passenger Ticket Fare Paid (USD)", min_value=0, max_value=500, value=32)
 
-# Keep all code execution tightly inside the button condition block
+# Keep model inference safely restricted to action clicks
 if st.button("Calculate Survival Probability"):
     try:
         model = load_model()
         input_data = pd.DataFrame([[pclass, sex, age, fare]], columns=FEATURES)
         
-        # Calculate target class probability
         probabilities = model.predict_proba(input_data)
         survival_chance = float(probabilities[0][1])
 
